@@ -1,36 +1,48 @@
 package com.luizgpolido.springBootEssentials.service;
 
 import com.luizgpolido.springBootEssentials.domain.Movies;
+import com.luizgpolido.springBootEssentials.repository.MoviesRepository;
+import com.luizgpolido.springBootEssentials.requests.MoviePostRequestBody;
+import com.luizgpolido.springBootEssentials.requests.MoviePutRequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
 public class MoviesService {
 
-    private static List<Movies> movies;
-
-    static {movies = new ArrayList<>(List.of(new Movies(1L, "Harry Potter" , "Fantasy"), new Movies(2L, "Need For Speed" , "Action")));}
+    private final MoviesRepository moviesRepository;
     public List<Movies> moviesList(){
-        return movies;
+        return moviesRepository.findAll();
     }
 
-    public Movies findById(long id){
-        return movies.stream()
-                .filter(anime -> anime.getId().equals(id))
-                .findFirst()
+    public Movies findByIdOrThrowsException(long id){
+        return moviesRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movie not found"));
     }
 
-    public Movies save (Movies movie){
-        movie.setId(ThreadLocalRandom.current().nextLong(3, 100));
-        movies.add(movie);
-        return movie;
+    public Movies save(MoviePostRequestBody moviePostRequestBody){
+        return moviesRepository.save(Movies.builder()
+                .name(moviePostRequestBody.getName())
+                .genre(moviePostRequestBody.getGenre())
+                .build());
+    }
+
+    public void delete(long id) {
+        moviesRepository.delete(findByIdOrThrowsException(id));
+    }
+
+    public void update(MoviePutRequestBody moviePutRequestBody) {
+        Movies savedMovie = findByIdOrThrowsException(moviePutRequestBody.getId());
+        Movies movie = Movies.builder()
+                .name(moviePutRequestBody.getName())
+                .id(savedMovie.getId())
+                .build();
+
+        moviesRepository.save(movie);
     }
 }

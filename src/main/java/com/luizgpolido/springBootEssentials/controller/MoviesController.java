@@ -1,6 +1,8 @@
 package com.luizgpolido.springBootEssentials.controller;
 
 import com.luizgpolido.springBootEssentials.domain.Movies;
+import com.luizgpolido.springBootEssentials.requests.MoviePostRequestBody;
+import com.luizgpolido.springBootEssentials.requests.MoviePutRequestBody;
 import com.luizgpolido.springBootEssentials.service.MoviesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,24 @@ public class MoviesController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<Movies> listById(@PathVariable long id){
-        return new ResponseEntity<>(moviesService.findById(id), HttpStatus.OK);
+        return new ResponseEntity<>(moviesService.findByIdOrThrowsException(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Movies> save(@RequestBody Movies movies){
-        return new ResponseEntity<>(moviesService.save(movies), HttpStatus.CREATED);
+    public ResponseEntity<Movies> save(@RequestBody MoviePostRequestBody moviePostRequestBody){
+        return new ResponseEntity<>(moviesService.save(moviePostRequestBody), HttpStatus.CREATED);
     }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable long id){
+        moviesService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping
+    public ResponseEntity<Void> update(@RequestBody MoviePutRequestBody moviePutRequestBody){
+        moviesService.update(moviePutRequestBody);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }
