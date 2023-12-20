@@ -1,6 +1,7 @@
 package com.luizgpolido.springBootEssentials.service;
 
 import com.luizgpolido.springBootEssentials.domain.Movies;
+import com.luizgpolido.springBootEssentials.mapper.MovieMapper;
 import com.luizgpolido.springBootEssentials.repository.MoviesRepository;
 import com.luizgpolido.springBootEssentials.requests.MoviePostRequestBody;
 import com.luizgpolido.springBootEssentials.requests.MoviePutRequestBody;
@@ -26,10 +27,7 @@ public class MoviesService {
     }
 
     public Movies save(MoviePostRequestBody moviePostRequestBody){
-        return moviesRepository.save(Movies.builder()
-                .name(moviePostRequestBody.getName())
-                .genre(moviePostRequestBody.getGenre())
-                .build());
+        return moviesRepository.save(MovieMapper.INSTANCE.toMovie(moviePostRequestBody));
     }
 
     public void delete(long id) {
@@ -38,11 +36,8 @@ public class MoviesService {
 
     public void update(MoviePutRequestBody moviePutRequestBody) {
         Movies savedMovie = findByIdOrThrowsException(moviePutRequestBody.getId());
-        Movies movie = Movies.builder()
-                .name(moviePutRequestBody.getName())
-                .id(savedMovie.getId())
-                .build();
-
+        Movies movie = MovieMapper.INSTANCE.toMovie(moviePutRequestBody);
+        movie.setId(savedMovie.getId());
         moviesRepository.save(movie);
     }
 }
